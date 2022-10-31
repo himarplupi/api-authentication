@@ -1,2 +1,2 @@
-# api-authentication
-api-authentication Web HIMARPL
+# api-gateway
+api-gateway Web HIMARPL
