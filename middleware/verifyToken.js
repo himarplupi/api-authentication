@@ -1,27 +1,27 @@
 const jwt = require('jsonwebtoken')
 
 module.exports = async (req, res, next) => {
-  const { JWT_SECRET_KEY } = process.env
-  const bearerHeader = req.headers.authorization
+  try {
+    const bearerHeader = req.headers.authorization
+    if (!bearerHeader) {
+      return res.json(403, {
+        status: 'fail',
+        message: 'Authorization is required'
+      })
+    }
 
-  if (bearerHeader) {
+    // Split key : Bearer
     const bearer = bearerHeader.split(' ')
     const bearerToken = bearer[1]
+    const decoded = jwt.verify(bearerToken, process.env.JWT_SECRET_KEY)
+    req.user = decoded.data.user
+    req.token = bearerHeader
 
-    jwt.verify(bearerToken, JWT_SECRET_KEY, (err, decoded) => {
-      if (err) {
-        err.statusCode = 403
-        err.status = 'fail'
-        return next(err)
-      }
-
-      req.user = decoded.data.user
-      return next()
-    })
-  } else {
-    return res.status(403).json({
+    next()
+  } catch (err) {
+    return res.json(403, {
       status: 'fail',
-      message: 'jwt must be provided'
+      message: err.message
     })
   }
 }
